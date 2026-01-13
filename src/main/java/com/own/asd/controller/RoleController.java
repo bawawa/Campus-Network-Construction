@@ -206,7 +206,9 @@ public class RoleController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", Map.of("isUnique", isUnique));
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("isUnique", isUnique);
+            response.put("data", dataMap);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

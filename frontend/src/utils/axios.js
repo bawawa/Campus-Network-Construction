@@ -1,11 +1,11 @@
 import axios from 'axios'
-import { Message, MessageBox } from 'element-ui'
+import {Message, MessageBox} from 'element-ui'
 import store from '@/store'
 
 // 创建axios实例
 const service = axios.create({
   baseURL: 'http://localhost:8081/api', // 后端API地址
-  timeout: 10000, // 请求超时时间
+  timeout: 120000, // 请求超时时间 120秒（AI生成报告需要较长时间）
   headers: {
     'Content-Type': 'application/json'
   }
@@ -70,7 +70,7 @@ service.interceptors.response.use(
           Message.error('服务器内部错误')
           break
         default:
-          Message.error(error.response.data?.message || '请求失败')
+          Message.error((error.response.data && error.response.data.message) || '请求失败')
       }
     } else if (error.message.includes('timeout')) {
       Message.error('请求超时，请检查网络连接')

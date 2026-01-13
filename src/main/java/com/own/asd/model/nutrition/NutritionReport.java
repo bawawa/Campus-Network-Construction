@@ -19,11 +19,8 @@ public class NutritionReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long childId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "child_id", insertable = false, updatable = false)
+    @JoinColumn(name = "child_id", nullable = false)
     @JsonIgnore
     private Child child;
 
@@ -94,8 +91,8 @@ public class NutritionReport {
     public NutritionReport() {
     }
 
-    public NutritionReport(Long childId, ReportType reportType, LocalDate startDate, LocalDate endDate) {
-        this.childId = childId;
+    public NutritionReport(Child child, ReportType reportType, LocalDate startDate, LocalDate endDate) {
+        this.child = child;
         this.reportType = reportType;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -110,11 +107,7 @@ public class NutritionReport {
     }
 
     public Long getChildId() {
-        return childId;
-    }
-
-    public void setChildId(Long childId) {
-        this.childId = childId;
+        return child != null ? child.getId() : null;
     }
 
     public Child getChild() {

@@ -10,7 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
@@ -189,10 +188,10 @@ public class NutritionistNoteController {
     @PutMapping("/{noteId}/response")
     public ResponseEntity<Map<String, Object>> addParentResponse(
             @PathVariable Long noteId,
-            @RequestParam @NotNull String response) {
+            @RequestParam @NotNull String responseText) {
 
         try {
-            NutritionistNote note = noteService.addParentResponse(noteId, response);
+            NutritionistNote note = noteService.addParentResponse(noteId, responseText);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -271,11 +270,11 @@ public class NutritionistNoteController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", Map.of(
-                "totalNotes", totalNotes,
-                "unreadNotes", unreadNotes,
-                "highPriorityNotes", highPriorityNotes.size()
-            ));
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("totalNotes", totalNotes);
+            dataMap.put("unreadNotes", unreadNotes);
+            dataMap.put("highPriorityNotes", highPriorityNotes.size());
+            response.put("data", dataMap);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -309,6 +308,28 @@ public class NutritionistNoteController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "获取留言详情失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * 获取营养师统计数据
+     */
+    @GetMapping("/nutritionist/{nutritionistId}/stats")
+    public ResponseEntity<Map<String, Object>> getNutritionistStats(@PathVariable Long nutritionistId) {
+        try {
+            Map<String, Object> stats = noteService.getNutritionistStats(nutritionistId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "统计数据获取成功");
+            response.put("data", stats);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "获取统计数据失败: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }

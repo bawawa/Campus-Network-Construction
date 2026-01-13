@@ -1,15 +1,16 @@
 import {
+  addParentResponse,
   createNutritionistNote,
+  deleteNote,
+  getNoteById,
   getNotesByChildId,
   getNotesByNutritionistId,
-  getUnreadNotes,
   getNotesByType,
-  markNoteAsRead,
-  addParentResponse,
-  updateNote,
-  deleteNote,
   getNoteStats,
-  getNoteById
+  getNutritionistStats,
+  getUnreadNotes,
+  markNoteAsRead,
+  updateNote
 } from '@/api/nutritionist'
 
 const state = {
@@ -71,11 +72,11 @@ const actions = {
     try {
       commit('SET_LOADING', true)
       const response = await createNutritionistNote(data)
-      if (response.data.success) {
-        commit('ADD_NOTE', response.data.data)
-        return response.data
+      if (response.success) {
+        commit('ADD_NOTE', response.data)
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -89,17 +90,17 @@ const actions = {
     try {
       commit('SET_LOADING', true)
       const response = await getNotesByChildId(childId, page, size)
-      if (response.data.success) {
-        commit('SET_NOTES', response.data.data)
+      if (response.success) {
+        commit('SET_NOTES', response.data)
         commit('SET_PAGINATION', {
-          totalElements: response.data.totalElements,
-          totalPages: response.data.totalPages,
-          currentPage: response.data.currentPage,
-          pageSize: response.data.pageSize
+          totalElements: response.totalElements,
+          totalPages: response.totalPages,
+          currentPage: response.currentPage,
+          pageSize: response.pageSize
         })
-        return response.data
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -113,17 +114,17 @@ const actions = {
     try {
       commit('SET_LOADING', true)
       const response = await getNotesByNutritionistId(nutritionistId, page, size)
-      if (response.data.success) {
-        commit('SET_NOTES', response.data.data)
+      if (response.success) {
+        commit('SET_NOTES', response.data)
         commit('SET_PAGINATION', {
-          totalElements: response.data.totalElements,
-          totalPages: response.data.totalPages,
-          currentPage: response.data.currentPage,
-          pageSize: response.data.pageSize
+          totalElements: response.totalElements,
+          totalPages: response.totalPages,
+          currentPage: response.currentPage,
+          pageSize: response.pageSize
         })
-        return response.data
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -136,11 +137,11 @@ const actions = {
   async getUnreadNotes({ commit }, childId) {
     try {
       const response = await getUnreadNotes(childId)
-      if (response.data.success) {
-        commit('SET_UNREAD_NOTES', response.data.data)
-        return response.data
+      if (response.success) {
+        commit('SET_UNREAD_NOTES', response.data)
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -151,11 +152,11 @@ const actions = {
   async getNotesByType({ commit }, { childId, noteType }) {
     try {
       const response = await getNotesByType(childId, noteType)
-      if (response.data.success) {
-        commit('SET_NOTES', response.data.data)
-        return response.data
+      if (response.success) {
+        commit('SET_NOTES', response.data)
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -166,11 +167,11 @@ const actions = {
   async markNoteAsRead({ commit }, noteId) {
     try {
       const response = await markNoteAsRead(noteId)
-      if (response.data.success) {
+      if (response.success) {
         commit('MARK_NOTE_AS_READ', noteId)
-        return response.data
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -181,11 +182,11 @@ const actions = {
   async addParentResponse({ commit }, { noteId, response }) {
     try {
       const res = await addParentResponse(noteId, response)
-      if (res.data.success) {
-        commit('UPDATE_NOTE', res.data.data)
-        return res.data
+      if (res.success) {
+        commit('UPDATE_NOTE', res.data)
+        return res
       } else {
-        throw new Error(res.data.message)
+        throw new Error(res.message)
       }
     } catch (error) {
       throw error
@@ -197,11 +198,11 @@ const actions = {
     try {
       commit('SET_LOADING', true)
       const response = await updateNote(noteId, data)
-      if (response.data.success) {
-        commit('UPDATE_NOTE', response.data.data)
-        return response.data
+      if (response.success) {
+        commit('UPDATE_NOTE', response.data)
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -214,11 +215,11 @@ const actions = {
   async deleteNote({ commit }, noteId) {
     try {
       const response = await deleteNote(noteId)
-      if (response.data.success) {
+      if (response.success) {
         commit('DELETE_NOTE', noteId)
-        return response.data
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -229,11 +230,11 @@ const actions = {
   async getNoteStats({ commit }, childId) {
     try {
       const response = await getNoteStats(childId)
-      if (response.data.success) {
-        commit('SET_NOTE_STATS', response.data.data)
-        return response.data
+      if (response.success) {
+        commit('SET_NOTE_STATS', response.data)
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error
@@ -244,11 +245,26 @@ const actions = {
   async getNoteById({ commit }, noteId) {
     try {
       const response = await getNoteById(noteId)
-      if (response.data.success) {
-        commit('SET_CURRENT_NOTE', response.data.data)
-        return response.data
+      if (response.success) {
+        commit('SET_CURRENT_NOTE', response.data)
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response.message)
+      }
+    } catch (error) {
+      throw error
+    }
+  },
+
+  // 获取营养师统计数据
+  async getNutritionistStats({ commit }, nutritionistId) {
+    try {
+      const response = await getNutritionistStats(nutritionistId)
+      if (response.success) {
+        commit('SET_NOTE_STATS', response.data)
+        return response
+      } else {
+        throw new Error(response.message)
       }
     } catch (error) {
       throw error

@@ -61,5 +61,12 @@ public class UserService {
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
+
+    public User authenticateUser(String email, String password) {
+        return findByEmail(email)
+                .filter(user -> passwordEncoder.matches(password, user.getPassword()))
+                .filter(User::getIsActive)
+                .orElse(null);
+    }
 }
 

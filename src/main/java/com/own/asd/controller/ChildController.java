@@ -2,12 +2,12 @@ package com.own.asd.controller;
 
 import com.own.asd.model.user.Child;
 import com.own.asd.service.ChildService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -25,8 +25,21 @@ public class ChildController {
 
     @GetMapping("/parent/{parentId}")
     public ResponseEntity<List<Child>> getChildrenByParent(@PathVariable Long parentId) {
-        List<Child> children = childService.getChildrenByParent(parentId);
+        // 使用带认证检查的方法，确保使用当前登录用户的数据
+        List<Child> children = childService.getChildrenByParentWithAuth(parentId);
         return ResponseEntity.ok(children);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Child>> getAllChildren() {
+        List<Child> children = childService.getAllChildren();
+        return ResponseEntity.ok(children);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Child> getChildById(@PathVariable Long id) {
+        Child child = childService.getChildById(id);
+        return ResponseEntity.ok(child);
     }
 
     @GetMapping("/parent/{parentId}/active")

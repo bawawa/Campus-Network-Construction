@@ -5,7 +5,7 @@
       <el-card class="welcome-card">
         <div class="welcome-content">
           <div class="welcome-text">
-            <h2>欢迎回来，{{ userInfo?.name }}！</h2>
+            <h2>欢迎回来，{{ userInfo && userInfo.name }}！</h2>
             <p>今天是 {{ currentDate }}，让我们关注孩子的营养健康</p>
           </div>
           <div class="welcome-icon">
@@ -108,12 +108,12 @@
     </div>
 
     <!-- 最近活动 -->
-    <div class="recent-activities">
+    <div class="recent-activities" v-if="recentActivities.length > 0">
       <el-card>
         <div class="section-header">
           <h3>最近活动</h3>
         </div>
-        <el-timeline>
+        <el-timeline v-if="!loading">
           <el-timeline-item
             v-for="(activity, index) in recentActivities"
             :key="index"
@@ -123,6 +123,7 @@
             {{ activity.content }}
           </el-timeline-item>
         </el-timeline>
+        <div v-else v-loading="true" style="padding: 20px;"></div>
       </el-card>
     </div>
 
@@ -145,71 +146,223 @@
         </el-row>
       </el-card>
     </div>
+
+    <!-- 管理员角色特殊面板 -->
+    <div class="admin-panel" v-if="userRole === 'ADMIN'">
+      <el-card>
+        <div class="section-header">
+          <h3>系统管理概览</h3>
+        </div>
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <el-statistic title="总用户数" :value="totalUsers" />
+          </el-col>
+          <el-col :span="6">
+            <el-statistic title="活跃用户" :value="activeUsers" />
+          </el-col>
+          <el-col :span="6">
+            <el-statistic title="家长数量" :value="parentCount" />
+          </el-col>
+          <el-col :span="6">
+            <el-statistic title="营养师数量" :value="nutritionistCount" />
+          </el-col>
+        </el-row>
+      </el-card>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import {mapGetters} from 'vuex'
 import moment from 'moment'
+import {getChildrenByParent} from '@/api/child'
+import {getRecentDietaryRecords} from '@/api/dietary'
+import {getActiveUsers, getUsersByRole} from '@/api/user'
 
 export default {
   name: 'Dashboard',
   data() {
     return {
       currentDate: moment().format('YYYY年MM月DD日 dddd'),
+      loading: false,
       stats: {
         childrenCount: 0,
         recordsCount: 0,
         reportsCount: 0,
         recipesCount: 0
       },
-      recentActivities: [
-        {
-          content: '添加了新的饮食记录',
-          timestamp: '2小时前',
-          color: '#409EFF'
-        },
-        {
-          content: '查看了营养分析报告',
-          timestamp: '昨天',
-          color: '#67C23A'
-        },
-        {
-          content: '更新了儿童ASD特质档案',
-          timestamp: '3天前',
-          color: '#E6A23C'
-        }
-      ],
+      recentActivities: [],
       pendingConsultations: 5,
       monthlyChildren: 12,
-      nutritionReports: 8
+      nutritionReports: 8,
+      // 管理员统计数据
+      totalUsers: 0,
+      activeUsers: 0,
+      parentCount: 0,
+      nutritionistCount: 0
     }
   },
   computed: {
-    ...mapGetters('user', ['userInfo', 'userRole'])
+    ...mapGetters('user', ['userInfo', 'userRole', 'userId'])
   },
   created() {
     this.loadDashboardData()
   },
   methods: {
-    loadDashboardData() {
-      // 这里应该调用API获取仪表盘数据
-      // 暂时使用模拟数据
-      if (this.userRole === 'PARENT') {
-        this.stats = {
-          childrenCount: 2,
-          recordsCount: 15,
-          reportsCount: 3,
-          recipesCount: 8
-        }
-      } else if (this.userRole === 'NUTRITIONIST') {
-        this.stats = {
-          childrenCount: 25,
-          recordsCount: 150,
-          reportsCount: 30,
-          recipesCount: 50
-        }
+    async loadDashboardData() {
+      if (!this.userId) {
+        this.$message.warning('请先登录')
+        return
       }
+
+      this.loading = true
+      try {
+        // 根据角色加载不同的数据
+        if (this.userRole === 'PARENT') {
+          await this.loadParentDashboard()
+        } else if (this.userRole === 'NUTRITIONIST') {
+          await this.loadNutritionistDashboard()
+        } else if (this.userRole === 'ADMIN') {
+          await this.loadAdminDashboard()
+        }
+      } catch (error) {
+        console.error('加载仪表盘数据失败:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async loadParentDashboard() {
+      try {
+        // 获取儿童数量
+        const childrenResponse = await getChildrenByParent(this.userId)
+        const children = Array.isArray(childrenResponse) ? childrenResponse : []
+        this.stats.childrenCount = children.length
+
+        // 获取第一个儿童的饮食记录数量
+        if (children.length > 0) {
+          const firstChildId = children[0].id
+          const recordsResponse = await getRecentDietaryRecords(firstChildId, 30)
+          const records = Array.isArray(recordsResponse) ? recordsResponse : []
+          this.stats.recordsCount = records.length
+
+          // 生成最近活动
+          this.recentActivities = this.generateRecentActivities(records, children)
+        }
+
+        // 暂时使用模拟数据
+        this.stats.reportsCount = 0
+        this.stats.recipesCount = 0
+      } catch (error) {
+        console.error('加载家长仪表盘数据失败:', error)
+      }
+    },
+
+    async loadNutritionistDashboard() {
+      try {
+        // 获取所有家长用户（作为服务对象）
+        const parentsResponse = await getUsersByRole('PARENT')
+        const parents = Array.isArray(parentsResponse) ? parentsResponse : []
+        this.stats.childrenCount = parents.length
+
+        // 暂时使用模拟数据
+        this.stats.recordsCount = 0
+        this.stats.reportsCount = 0
+        this.stats.recipesCount = 0
+      } catch (error) {
+        console.error('加载营养师仪表盘数据失败:', error)
+      }
+    },
+
+    async loadAdminDashboard() {
+      try {
+        // 获取活跃用户
+        const activeUsersResponse = await getActiveUsers()
+        const activeUsers = Array.isArray(activeUsersResponse) ? activeUsersResponse : []
+        this.activeUsers = activeUsers.length
+
+        // 获取家长数量
+        const parentsResponse = await getUsersByRole('PARENT')
+        const parents = Array.isArray(parentsResponse) ? parentsResponse : []
+        this.parentCount = parents.length
+
+        // 获取营养师数量
+        const nutritionistsResponse = await getUsersByRole('NUTRITIONIST')
+        const nutritionists = Array.isArray(nutritionistsResponse) ? nutritionistsResponse : []
+        this.nutritionistCount = nutritionists.length
+
+        // 总用户数
+        this.totalUsers = this.activeUsers
+
+        this.stats.childrenCount = this.parentCount
+        this.stats.recordsCount = 0
+        this.stats.reportsCount = 0
+        this.stats.recipesCount = 0
+      } catch (error) {
+        console.error('加载管理员仪表盘数据失败:', error)
+      }
+    },
+
+    generateRecentActivities(records, children) {
+      const activities = []
+
+      // 从最近的饮食记录生成活动
+      if (records.length > 0) {
+        records.slice(0, 3).forEach(record => {
+          const child = children.find(c => c.id === record.child?.id)
+          const childName = child ? child.name : '未知儿童'
+          const mealType = this.getMealTypeText(record.mealType)
+          activities.push({
+            content: `记录了${childName}的${mealType} - ${record.foodItem?.name || '食物'}`,
+            timestamp: this.formatRelativeTime(record.createdAt),
+            color: '#409EFF'
+          })
+        })
+      }
+
+      // 如果活动不足3个，添加一些默认活动
+      while (activities.length < 3 && children.length > 0) {
+        activities.push({
+          content: `查看 ${children[0].name} 的儿童档案`,
+          timestamp: '最近',
+          color: '#67C23A'
+        })
+        break
+      }
+
+      return activities
+    },
+
+    formatRelativeTime(dateString) {
+      if (!dateString) return '刚刚'
+      const date = moment(dateString)
+      const now = moment()
+      const diffMinutes = now.diff(date, 'minutes')
+      const diffHours = now.diff(date, 'hours')
+      const diffDays = now.diff(date, 'days')
+
+      if (diffMinutes < 60) {
+        return `${diffMinutes}分钟前`
+      } else if (diffHours < 24) {
+        return `${diffHours}小时前`
+      } else if (diffDays === 1) {
+        return '昨天'
+      } else if (diffDays < 7) {
+        return `${diffDays}天前`
+      } else {
+        return date.format('MM-DD')
+      }
+    },
+
+    getMealTypeText(type) {
+      const map = {
+        'BREAKFAST': '早餐',
+        'LUNCH': '午餐',
+        'DINNER': '晚餐',
+        'SNACK': '加餐',
+        'SUPPER': '夜宵'
+      }
+      return map[type] || type
     },
 
     goToAddChild() {

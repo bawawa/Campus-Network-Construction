@@ -6,6 +6,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import axios from './utils/axios'
 import './assets/styles/global.css'
+import './icons'
 
 Vue.use(ElementUI)
 

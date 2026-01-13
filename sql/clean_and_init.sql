@@ -30,7 +30,7 @@ VALUES
 -- ========================================
 -- 2. 权限定义
 -- ========================================
-INSERT INTO permissions (code, name, display_name, description, created_at, updated_at)
+INSERT INTO permissions (code, name, description, created_at, updated_at)
 VALUES
 ('VIEW_CHILDREN', '查看儿童信息', '可以查看儿童的基本信息和档案', NOW(), NOW()),
 ('ADD_DIETARY_RECORDS', '添加饮食记录', '可以添加和修改饮食记录', NOW(), NOW()),

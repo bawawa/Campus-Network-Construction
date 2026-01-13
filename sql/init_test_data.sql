@@ -9,25 +9,25 @@
 -- ========================================
 INSERT INTO users (name, email, password, phone, role, is_active, created_at, updated_at)
 VALUES
-('系统管理员', 'admin@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000001', 'ADMIN', true, NOW(), NOW());
+('系统管理员', 'admin@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000001', 'ADMIN', true, NOW(), NOW());
 
 -- ========================================
 -- 2. 营养师账户
 -- ========================================
 INSERT INTO users (name, email, password, phone, role, is_active, created_at, updated_at)
 VALUES
-('李营养师', 'nutritionist1@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000002', 'NUTRITIONIST', true, NOW(), NOW()),
-('王营养师', 'nutritionist2@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000003', 'NUTRITIONIST', true, NOW(), NOW());
+('李营养师', 'nutritionist1@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000002', 'NUTRITIONIST', true, NOW(), NOW()),
+('王营养师', 'nutritionist2@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000003', 'NUTRITIONIST', true, NOW(), NOW());
 
 -- ========================================
 -- 3. 家长账户
 -- ========================================
 INSERT INTO users (name, email, password, phone, role, relationship_type, is_active, created_at, updated_at)
 VALUES
-('张三', 'parent1@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000011', 'PARENT', 'FATHER', true, NOW(), NOW()),
-('李四', 'parent2@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000012', 'PARENT', 'MOTHER', true, NOW(), NOW()),
-('王五', 'parent3@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000013', 'PARENT', 'FATHER', true, NOW(), NOW()),
-('赵六', 'parent4@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000014', 'PARENT', 'MOTHER', true, NOW(), NOW());
+('张三', 'parent1@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EHsM8lE9lBOsl', '13800000011', 'PARENT', 'FATHER', true, NOW(), NOW()),
+('李四', 'parent2@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl', '13800000012', 'PARENT', 'MOTHER', true, NOW(), NOW()),
+('王五', 'parent3@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl', '13800000013', 'PARENT', 'FATHER', true, NOW(), NOW()),
+('赵六', 'parent4@asd.com', '$2a$10$N.zmdr9k7uOCQb3765UnuTJ8iAt6Z5EHsM8lE9lBOsl', '13800000014', 'PARENT', 'MOTHER', true, NOW(), NOW());
 
 -- ========================================
 -- 4. 插入儿童数据（关联家长）
@@ -42,23 +42,23 @@ VALUES
 -- ========================================
 -- 5. 插入 ASD 特质档案
 -- ========================================
-INSERT INTO asd_profiles (child_id, asd_level, diagnosis_date, diagnosis_institution, symptoms, special_needs, created_at, updated_at)
+INSERT INTO asd_profiles (child_id, sensory_sensitivity, behavior_patterns, allergic_foods, intolerant_foods, texture_preference, color_preference, smell_preference, eating_behavior_notes, special_notes, created_at, updated_at)
 VALUES
-((SELECT id FROM children WHERE name = '张小明'), 'LEVEL_2', '2020-01-15', '北京市儿童医院', '社交障碍, 语言发育迟缓', '需要更多时间适应新环境，对噪音敏感', NOW(), NOW()),
-((SELECT id FROM children WHERE name = '李小红'), 'LEVEL_1', '2020-05-20', '上海市儿童医院', '轻微自闭症', '喜欢固定规律，对视觉刺激敏感', NOW(), NOW()),
-((SELECT id FROM children WHERE name = '王小华'), 'LEVEL_3', '2019-08-10', '广州市儿童医院', '重度自闭症, 沟通障碍', '需要专业康复训练，对食物质地有要求', NOW(), NOW()),
-((SELECT id FROM children WHERE name = '赵小美'), 'LEVEL_2', '2021-03-05', '深圳市儿童医院', '中度自闭症', '需要营养师指导饮食', NOW(), NOW());
+((SELECT id FROM children WHERE name = '张小明'), 'SENSITIVE', '社交障碍，语言发育迟缓', '鸡蛋，花生', '牛奶', 'SOFT', '蓝色', 'MILD', '需要更多时间适应新环境，对噪音敏感', '偏好软烂食物，避免硬质食物', NOW(), NOW()),
+((SELECT id FROM children WHERE name = '李小红'), 'SENSITIVE', '轻微自闭症', '鸡蛋，花生', '无', 'SOFT', '粉色', 'NEUTRAL', '喜欢固定规律，对视觉刺激敏感', '需要安静的就餐环境', NOW(), NOW()),
+((SELECT id FROM children WHERE name = '王小华'), 'AVERSIVE', '重度自闭症，沟通障碍', '无', '海鲜', 'VERY_SOFT', '绿色', 'DISLIKE', '需要专业康复训练，对食物质地有要求', '只能吃糊状食物，拒绝有颗粒的食物', NOW(), NOW()),
+((SELECT id FROM children WHERE name = '赵小美'), 'SENSITIVE', '中度自闭症', '无', '无', 'SOFT', '黄色', 'LIKE', '需要营养师指导饮食', '对水果接受度较高', NOW(), NOW());
 
 -- ========================================
 -- 6. 插入食物营养数据
 -- ========================================
-INSERT INTO food_items (name, chinese_name, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, fiber_per_100g, calcium_per_100g, iron_per_100g, vitamin_c_per_100g, category, is_preset, created_at, updated_at)
+INSERT INTO food_items (name, chinese_name, energy_per_100g, protein_per_100g, carbohydrate_per_100g, fat_per_100g, fiber_per_100g, calcium_per_100g, iron_per_100g, vitamin_c_per_100g, category, is_preset, created_at, updated_at)
 VALUES
 ('Apple', '苹果', 52, 0.3, 14.0, 0.2, 2.4, 6, 0.1, 4.6, 'FRUIT', true, NOW(), NOW()),
 ('Chicken Breast', '鸡胸肉', 165, 31, 0, 3.6, 0, 5, 0.9, 0, 'PROTEIN', true, NOW(), NOW()),
 ('Broccoli', '西兰花', 34, 2.8, 7.0, 0.4, 2.6, 47, 0.7, 89, 'VEGETABLE', true, NOW(), NOW()),
 ('Brown Rice', '糙米', 111, 2.6, 23.0, 0.9, 1.8, 3, 0.6, 0, 'GRAIN', true, NOW(), NOW()),
-('Milk', '牛奶', 64, 3.2, 4.8, 3.3, 0, 120, 0.1, 0, 'DAIRY', true, NOW(), NOW()),
+('Milk', '牛奶', 64, 3.2, 4.8, 3.3, 0, 120, 0.1, 0.2, 'DAIRY', true, NOW(), NOW()),
 ('Salmon', '三文鱼', 208, 20, 0, 13, 0, 9, 0.4, 0, 'PROTEIN', true, NOW(), NOW()),
 ('Carrot', '胡萝卜', 41, 0.9, 10.0, 0.2, 2.8, 33, 0.3, 6, 'VEGETABLE', true, NOW(), NOW()),
 ('Yogurt', '酸奶', 59, 10, 3.6, 0.4, 0, 110, 0.1, 0.2, 'DAIRY', true, NOW(), NOW()),
@@ -98,6 +98,7 @@ VALUES
 -- ========================================
 -- 10. 插入饮食限制
 -- ========================================
+-- 查看dietary_restrictions表结构
 INSERT INTO dietary_restrictions (child_id, restriction_type, description, severity, created_at, updated_at)
 VALUES
 ((SELECT id FROM children WHERE name = '张小明'), 'TEXTURE_SENSITIVITY', '对粗糙食物敏感，需要软烂食物', 'MODERATE', NOW(), NOW()),
@@ -145,6 +146,6 @@ WHERE
 -- ========================================
 -- 完成
 -- ========================================
-SELECT '测试数据插入完成！' AS status;
-SELECT '所有测试账户的密码都是：123456' AS password_info;
+SELECT '✅ 测试数据插入完成！' AS status;
+SELECT '📝 所有测试账户的密码都是：123456' AS password_info;
 

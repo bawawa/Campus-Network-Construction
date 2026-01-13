@@ -49,3 +49,15 @@ export function getQuickAnalysis(childId) {
   })
 }
 
+// 生成 AI 营养分析报告
+export function generateAIReport(childId, startDate, endDate) {
+  return request({
+    url: `/nutrition-analysis/child/${childId}/ai-report`,
+    method: 'post',
+    params: {
+      startDate,
+      endDate
+    }
+  })
+}
+

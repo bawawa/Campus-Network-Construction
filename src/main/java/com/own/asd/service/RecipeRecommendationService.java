@@ -4,9 +4,9 @@ import com.own.asd.model.nutrition.DietaryRecord;
 import com.own.asd.model.nutrition.Recipe;
 import com.own.asd.model.user.ASDProfile;
 import com.own.asd.model.user.Child;
-import com.own.asd.repository.RecipeRepository;
-import com.own.asd.repository.DietaryRecordRepository;
 import com.own.asd.repository.ChildRepository;
+import com.own.asd.repository.DietaryRecordRepository;
+import com.own.asd.repository.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -218,7 +221,7 @@ public class RecipeRecommendationService {
         Map<String, Long> foodCategoryFrequency = recentRecords.stream()
                 .filter(record -> record.getFoodItem() != null && record.getFoodItem().getCategory() != null)
                 .collect(Collectors.groupingBy(
-                        record -> record.getFoodItem().getCategory(),
+                        record -> record.getFoodItem().getCategory().name(),
                         Collectors.counting()
                 ));
 
@@ -403,12 +406,11 @@ public class RecipeRecommendationService {
     /**
      * 计算年龄
      */
-    private int calculateAge(Date birthDate) {
+    private int calculateAge(LocalDate birthDate) {
         if (birthDate == null) return 6; // 默认年龄
 
-        LocalDate birth = new java.sql.Date(birthDate.getTime()).toLocalDate();
         LocalDate now = LocalDate.now();
-        return (int) java.time.temporal.ChronoUnit.YEARS.between(birth, now);
+        return (int) java.time.temporal.ChronoUnit.YEARS.between(birthDate, now);
     }
 
     /**

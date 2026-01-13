@@ -1,14 +1,15 @@
 package com.own.asd.model.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.own.asd.model.nutrition.DietaryRestriction;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,12 +59,15 @@ public class Child {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", nullable = false)
+    @JsonIgnore
     private User parent;
 
     @OneToMany(mappedBy = "child", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<DietaryRestriction> dietaryRestrictions;
 
     @OneToMany(mappedBy = "child", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ASDProfile> asdProfiles;
 
     public enum Gender {
@@ -74,6 +78,17 @@ public class Child {
     public Integer getAge() {
         if (birthDate == null) return null;
         return LocalDate.now().getYear() - birthDate.getYear();
+    }
+
+    // 获取最新的ASD档案
+    public ASDProfile getAsdProfile() {
+        if (asdProfiles == null || asdProfiles.isEmpty()) {
+            return null;
+        }
+        return asdProfiles.stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .findFirst()
+                .orElse(null);
     }
 }
 

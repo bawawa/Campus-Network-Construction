@@ -73,6 +73,7 @@
           <el-select v-model="registerForm.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="家长" value="PARENT" />
             <el-option label="营养师" value="NUTRITIONIST" />
+            <el-option label="管理员" value="ADMIN" />
           </el-select>
         </el-form-item>
 
@@ -217,7 +218,7 @@ export default {
     },
 
     resetRegisterForm() {
-      this.$refs.registerForm?.resetFields()
+      this.$refs.registerForm && this.$refs.registerForm.resetFields()
     }
   }
 }

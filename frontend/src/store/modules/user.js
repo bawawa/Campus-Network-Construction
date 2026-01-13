@@ -1,4 +1,4 @@
-import { getUserByEmail, createUser } from '@/api/user'
+import {changePassword, createUser, getUserByEmail, login, updateUser} from '@/api/user'
 
 const state = {
   userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
@@ -28,24 +28,19 @@ const mutations = {
 const actions = {
   async login({ commit }, { email, password }) {
     try {
-      // 这里应该调用后端登录API
-      // 暂时模拟登录过程
-      const response = await getUserByEmail(email)
-      if (response.data) {
-        commit('SET_USER_INFO', response.data)
-        commit('SET_TOKEN', 'mock-token-' + Date.now())
-        return response.data
-      }
-      throw new Error('登录失败')
+      const response = await login({ email, password })
+      commit('SET_USER_INFO', response.user)
+      commit('SET_TOKEN', response.token)
+      return response.user
     } catch (error) {
-      throw error
+      throw new Error(error.response?.data || '登录失败，请检查邮箱和密码')
     }
   },
 
   async register({ commit }, userData) {
     try {
       const response = await createUser(userData)
-      return response.data
+      return response
     } catch (error) {
       throw error
     }
@@ -56,13 +51,36 @@ const actions = {
   },
 
   async fetchUserInfo({ commit, state }) {
-    if (state.token && state.userInfo?.email) {
+    if (state.token && state.userInfo && state.userInfo.email) {
       try {
         const response = await getUserByEmail(state.userInfo.email)
-        commit('SET_USER_INFO', response.data)
-        return response.data
+        commit('SET_USER_INFO', response)
+        return response
       } catch (error) {
         console.error('获取用户信息失败:', error)
+      }
+    }
+  },
+
+  async updateUserInfo({ commit, state }, userData) {
+    if (state.userInfo && state.userInfo.id) {
+      try {
+        const response = await updateUser(state.userInfo.id, userData)
+        commit('SET_USER_INFO', response)
+        return response
+      } catch (error) {
+        throw new Error(error.response?.data || '更新用户信息失败')
+      }
+    }
+  },
+
+  async changePassword({ state, dispatch }, passwordData) {
+    if (state.userInfo && state.userInfo.id) {
+      try {
+        await changePassword(state.userInfo.id, passwordData)
+        this.$message && this.$message.success('密码修改成功')
+      } catch (error) {
+        throw new Error(error.response?.data || '修改密码失败')
       }
     }
   }
@@ -71,8 +89,8 @@ const actions = {
 const getters = {
   userInfo: state => state.userInfo,
   isAuthenticated: state => state.isAuthenticated,
-  userRole: state => state.userInfo?.role,
-  userId: state => state.userInfo?.id
+  userRole: state => (state.userInfo && state.userInfo.role),
+  userId: state => (state.userInfo && state.userInfo.id)
 }
 
 export default {

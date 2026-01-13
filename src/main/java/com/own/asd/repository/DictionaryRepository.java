@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -54,6 +53,11 @@ public interface DictionaryRepository extends JpaRepository<Dictionary, Long> {
      */
     @Query("SELECT DISTINCT d.type FROM Dictionary d WHERE d.isActive = true")
     List<String> findAllTypes();
+
+    /**
+     * 查找所有启用的字典项
+     */
+    List<Dictionary> findByIsActiveTrueOrderBySortOrderAsc();
 
     /**
      * 根据类型和父ID查找

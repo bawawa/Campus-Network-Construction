@@ -99,3 +99,11 @@ export function getNoteById(noteId) {
   })
 }
 
+// 获取营养师统计数据
+export function getNutritionistStats(nutritionistId) {
+  return request({
+    url: `/nutritionist-notes/nutritionist/${nutritionistId}/stats`,
+    method: 'get'
+  })
+}
+

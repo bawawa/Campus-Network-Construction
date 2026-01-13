@@ -175,6 +175,7 @@
 
 <script>
 import moment from 'moment'
+import { getUsersByRole, updateUser } from '@/api/user'
 
 export default {
   name: 'UserManagement',
@@ -246,51 +247,11 @@ export default {
     async loadUsers() {
       this.loading = true
       try {
-        // 这里应该调用API获取用户列表
-        // 暂时使用模拟数据
-        const mockUsers = [
-          {
-            id: 1,
-            name: '张三',
-            email: 'zhangsan@example.com',
-            phone: '13800138000',
-            role: 'PARENT',
-            relationshipType: 'FATHER',
-            isActive: true,
-            createdAt: '2026-01-01T10:00:00'
-          },
-          {
-            id: 2,
-            name: '李四',
-            email: 'lisi@example.com',
-            phone: '13800138001',
-            role: 'NUTRITIONIST',
-            isActive: true,
-            createdAt: '2026-01-02T10:00:00'
-          },
-          {
-            id: 3,
-            name: '王五',
-            email: 'wangwu@example.com',
-            phone: '13800138002',
-            role: 'ADMIN',
-            isActive: true,
-            createdAt: '2026-01-03T10:00:00'
-          },
-          {
-            id: 4,
-            name: '赵六',
-            email: 'zhaoliu@example.com',
-            phone: '13800138003',
-            role: 'PARENT',
-            relationshipType: 'MOTHER',
-            isActive: false,
-            createdAt: '2026-01-04T10:00:00'
-          }
-        ]
-        this.users = mockUsers
-        this.pagination.total = mockUsers.length
+        const response = await getUsersByRole('PARENT')
+        this.users = response.data || []
+        this.pagination.total = response.data ? response.data.length : 0
       } catch (error) {
+        console.error('加载用户列表失败:', error)
         this.$message.error('加载用户列表失败')
       } finally {
         this.loading = false
@@ -330,8 +291,13 @@ export default {
         if (valid) {
           this.userDialog.loading = true
           try {
-            // 这里应该调用API保存用户
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            // 调用API保存用户
+            if (this.userForm.id) {
+              await updateUser(this.userForm.id, this.userForm)
+            } else {
+              // 新增用户功能暂未实现，需要调用创建API
+              await new Promise(resolve => setTimeout(resolve, 500))
+            }
             this.$message.success(this.userForm.id ? '更新成功' : '添加成功')
             this.userDialog.visible = false
             this.loadUsers()

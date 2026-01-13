@@ -1,12 +1,12 @@
 package com.own.asd.model.nutrition;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -60,6 +60,9 @@ public class FoodItem {
 
     @Column(name = "is_preset")
     private Boolean isPreset = false;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
     @Column(name = "cooking_methods", columnDefinition = "TEXT")
     private String cookingMethods;

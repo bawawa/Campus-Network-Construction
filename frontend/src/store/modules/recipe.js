@@ -1,9 +1,10 @@
 import {
-  getSmartRecommendations,
+  generateAIRecommendations,
   getPersonalizedRecommendations,
   getRandomRecommendations,
-  searchRecipes,
-  getRecommendationStats
+  getRecommendationStats,
+  getSmartRecommendations,
+  searchRecipes
 } from '@/api/recipe'
 
 const state = {
@@ -12,6 +13,7 @@ const state = {
   randomRecommendations: [],
   searchResults: [],
   recommendationStats: null,
+  aiRecommendation: null,
   loading: false,
   selectedChildId: null,
   searchKeyword: '',
@@ -38,6 +40,9 @@ const mutations = {
   SET_RECOMMENDATION_STATS(state, stats) {
     state.recommendationStats = stats
   },
+  SET_AI_RECOMMENDATION(state, recommendation) {
+    state.aiRecommendation = recommendation
+  },
   SET_LOADING(state, loading) {
     state.loading = loading
   },
@@ -55,6 +60,7 @@ const mutations = {
     state.personalizedRecommendations = {}
     state.randomRecommendations = []
     state.searchResults = []
+    state.aiRecommendation = null
   }
 }
 
@@ -66,11 +72,13 @@ const actions = {
       commit('SET_SELECTED_CHILD_ID', childId)
 
       const response = await getSmartRecommendations(childId, mealType)
-      if (response.data.success) {
-        commit('SET_SMART_RECOMMENDATIONS', response.data.data.recommendations || [])
-        return response.data
+      // axios拦截器已返回 response.data，所以 response 就是 { success, data, ... }
+      if (response && response.success) {
+        const data = response.data || {}
+        commit('SET_SMART_RECOMMENDATIONS', data.recommendations || [])
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response && response.message || '智能推荐生成失败')
       }
     } catch (error) {
       throw error
@@ -86,11 +94,11 @@ const actions = {
       commit('SET_SELECTED_CHILD_ID', childId)
 
       const response = await getPersonalizedRecommendations(childId)
-      if (response.data.success) {
-        commit('SET_PERSONALIZED_RECOMMENDATIONS', response.data.data)
-        return response.data
+      if (response && response.success) {
+        commit('SET_PERSONALIZED_RECOMMENDATIONS', response.data || {})
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response && response.message || '个性化推荐生成失败')
       }
     } catch (error) {
       throw error
@@ -104,11 +112,11 @@ const actions = {
     try {
       commit('SET_LOADING', true)
       const response = await getRandomRecommendations(count)
-      if (response.data.success) {
-        commit('SET_RANDOM_RECOMMENDATIONS', response.data.data || [])
-        return response.data
+      if (response && response.success) {
+        commit('SET_RANDOM_RECOMMENDATIONS', response.data || [])
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response && response.message || '随机推荐获取失败')
       }
     } catch (error) {
       throw error
@@ -124,11 +132,11 @@ const actions = {
       commit('SET_SEARCH_KEYWORD', keyword)
 
       const response = await searchRecipes(keyword, mealType, maxDifficulty, maxCookingTime)
-      if (response.data.success) {
-        commit('SET_SEARCH_RESULTS', response.data.data || [])
-        return response.data
+      if (response && response.success) {
+        commit('SET_SEARCH_RESULTS', response.data || [])
+        return response
       } else {
-        throw new Error(response.data.message)
+        throw new Error(response && response.message || '搜索失败')
       }
     } catch (error) {
       throw error
@@ -170,6 +178,25 @@ const actions = {
   // 清除推荐数据
   clearRecommendations({ commit }) {
     commit('CLEAR_RECOMMENDATIONS')
+  },
+
+  // 生成 AI 推荐食谱
+  async generateAIRecommendations({ commit }, { childId, mealType = null }) {
+    try {
+      commit('SET_LOADING', true)
+
+      const response = await generateAIRecommendations(childId, mealType)
+      if (response && response.success) {
+        commit('SET_AI_RECOMMENDATION', response.data)
+        return response
+      } else {
+        throw new Error(response && response.message || 'AI推荐生成失败')
+      }
+    } catch (error) {
+      throw error
+    } finally {
+      commit('SET_LOADING', false)
+    }
   }
 }
 
@@ -179,24 +206,25 @@ const getters = {
   randomRecommendations: state => state.randomRecommendations,
   searchResults: state => state.searchResults,
   recommendationStats: state => state.recommendationStats,
+  aiRecommendation: state => state.aiRecommendation,
   loading: state => state.loading,
   selectedChildId: state => state.selectedChildId,
   searchKeyword: state => state.searchKeyword,
   filters: state => state.filters,
 
   // 按餐次分组的个性化推荐
-  breakfastRecommendations: state => state.personalizedRecommendations.breakfast?.recommendations || [],
-  lunchRecommendations: state => state.personalizedRecommendations.lunch?.recommendations || [],
-  dinnerRecommendations: state => state.personalizedRecommendations.dinner?.recommendations || [],
-  snackRecommendations: state => state.personalizedRecommendations.snack?.recommendations || [],
+  breakfastRecommendations: state => (state.personalizedRecommendations.breakfast && state.personalizedRecommendations.breakfast.recommendations) || [],
+  lunchRecommendations: state => (state.personalizedRecommendations.lunch && state.personalizedRecommendations.lunch.recommendations) || [],
+  dinnerRecommendations: state => (state.personalizedRecommendations.dinner && state.personalizedRecommendations.dinner.recommendations) || [],
+  snackRecommendations: state => (state.personalizedRecommendations.snack && state.personalizedRecommendations.snack.recommendations) || [],
 
   // 总推荐数量
   totalRecommendations: state => {
     const personalized = state.personalizedRecommendations
-    return (personalized.breakfast?.totalCount || 0) +
-           (personalized.lunch?.totalCount || 0) +
-           (personalized.dinner?.totalCount || 0) +
-           (personalized.snack?.totalCount || 0)
+    return ((personalized.breakfast && personalized.breakfast.totalCount) || 0) +
+           ((personalized.lunch && personalized.lunch.totalCount) || 0) +
+           ((personalized.dinner && personalized.dinner.totalCount) || 0) +
+           ((personalized.snack && personalized.snack.totalCount) || 0)
   }
 }
 

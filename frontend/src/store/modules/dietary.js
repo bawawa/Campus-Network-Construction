@@ -1,12 +1,12 @@
 import {
-  getDietaryRecordsByChild,
   createDietaryRecord,
-  updateDietaryRecord,
-  deleteDietaryRecord,
-  getFoodItems,
   createFoodItem,
+  createNutritionistNote,
+  deleteDietaryRecord,
+  getDietaryRecordsByChild,
+  getFoodItems,
   getNutritionistNotes,
-  createNutritionistNote
+  updateDietaryRecord
 } from '@/api/dietary'
 
 const state = {
@@ -55,8 +55,10 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await getDietaryRecordsByChild(childId, dateRange)
-      commit('SET_DIETARY_RECORDS', response.data || [])
-      return response.data
+      // axios拦截器已返回 response.data，所以 response 就是数据
+      const data = Array.isArray(response) ? response : []
+      commit('SET_DIETARY_RECORDS', data)
+      return data
     } catch (error) {
       console.error('获取饮食记录失败:', error)
       throw error
@@ -69,8 +71,8 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await createDietaryRecord(recordData)
-      commit('ADD_DIETARY_RECORD', response.data)
-      return response.data
+      commit('ADD_DIETARY_RECORD', response)
+      return response
     } catch (error) {
       console.error('创建饮食记录失败:', error)
       throw error
@@ -83,8 +85,8 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await updateDietaryRecord(recordId, data)
-      commit('UPDATE_DIETARY_RECORD', response.data)
-      return response.data
+      commit('UPDATE_DIETARY_RECORD', response)
+      return response
     } catch (error) {
       console.error('更新饮食记录失败:', error)
       throw error
@@ -111,8 +113,9 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await getFoodItems()
-      commit('SET_FOOD_ITEMS', response.data || [])
-      return response.data
+      const data = Array.isArray(response) ? response : []
+      commit('SET_FOOD_ITEMS', data)
+      return data
     } catch (error) {
       console.error('获取食物列表失败:', error)
       throw error
@@ -125,9 +128,9 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await createFoodItem(foodData)
-      const items = [...state.foodItems, response.data]
+      const items = [...state.foodItems, response]
       commit('SET_FOOD_ITEMS', items)
-      return response.data
+      return response
     } catch (error) {
       console.error('创建食物项目失败:', error)
       throw error
@@ -140,8 +143,9 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await getNutritionistNotes(childId)
-      commit('SET_NUTRITIONIST_NOTES', response.data || [])
-      return response.data
+      const data = Array.isArray(response) ? response : []
+      commit('SET_NUTRITIONIST_NOTES', data)
+      return data
     } catch (error) {
       console.error('获取营养师留言失败:', error)
       throw error
@@ -154,8 +158,8 @@ const actions = {
     commit('SET_LOADING', true)
     try {
       const response = await createNutritionistNote(noteData)
-      commit('ADD_NUTRITIONIST_NOTE', response.data)
-      return response.data
+      commit('ADD_NUTRITIONIST_NOTE', response)
+      return response
     } catch (error) {
       console.error('创建营养师留言失败:', error)
       throw error

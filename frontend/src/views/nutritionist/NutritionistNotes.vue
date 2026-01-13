@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import {mapActions} from 'vuex'
 import moment from 'moment'
 
 export default {
@@ -77,7 +77,6 @@ export default {
   data() {
     return {
       notes: [],
-      childId: null,
       replying: {},
       replyForm: {}
     }
@@ -88,7 +87,15 @@ export default {
     }
   },
   created() {
-    this.loadNotes()
+    // 等待路由参数准备好
+    this.$nextTick(() => {
+      this.loadNotes()
+    })
+  },
+  watch: {
+    childId() {
+      this.loadNotes()
+    }
   },
   methods: {
     ...mapActions('nutritionist', ['getNotesByChildId', 'addParentResponse']),

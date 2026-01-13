@@ -35,13 +35,13 @@ public interface NutritionReportRepository extends JpaRepository<NutritionReport
     /**
      * 查找儿童最新的AI报告
      */
-    @Query("SELECT r FROM NutritionReport r WHERE r.childId = :childId AND r.reportType = 'AI' ORDER BY r.generatedAt DESC")
+    @Query("SELECT r FROM NutritionReport r WHERE r.child.id = :childId AND r.reportType = 'AI' ORDER BY r.generatedAt DESC")
     Optional<NutritionReport> findLatestAIReport(@Param("childId") Long childId);
 
     /**
      * 检查是否已存在相同日期范围的报告
      */
-    @Query("SELECT r FROM NutritionReport r WHERE r.childId = :childId " +
+    @Query("SELECT r FROM NutritionReport r WHERE r.child.id = :childId " +
            "AND r.reportType = :reportType " +
            "AND ((r.startDate <= :endDate AND r.endDate >= :startDate))")
     List<NutritionReport> findOverlappingReports(

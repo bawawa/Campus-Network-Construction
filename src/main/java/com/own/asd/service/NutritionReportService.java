@@ -2,6 +2,8 @@ package com.own.asd.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.own.asd.model.nutrition.NutritionReport;
+import com.own.asd.model.user.Child;
+import com.own.asd.repository.ChildRepository;
 import com.own.asd.repository.NutritionReportRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class NutritionReportService {
     @Autowired
     private NutritionReportRepository nutritionReportRepository;
 
+    @Autowired
+    private ChildRepository childRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -33,6 +38,10 @@ public class NutritionReportService {
             LocalDate startDate,
             LocalDate endDate) {
         try {
+            // 获取 Child 对象
+            Child child = childRepository.findById(childId)
+                    .orElseThrow(() -> new RuntimeException("儿童不存在: " + childId));
+
             // 检查是否已存在相同日期范围的 AI 报告
             List<NutritionReport> overlappingReports = nutritionReportRepository.findOverlappingReports(
                     childId,
@@ -49,7 +58,7 @@ public class NutritionReportService {
 
             // 创建新的报告
             NutritionReport report = new NutritionReport();
-            report.setChildId(childId);
+            report.setChild(child);
             report.setReportType(NutritionReport.ReportType.AI);
             report.setStartDate(startDate);
             report.setEndDate(endDate);

@@ -1,14 +1,15 @@
 package com.own.asd.model.nutrition;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.own.asd.model.user.Child;
 import com.own.asd.model.user.User;
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,10 +25,12 @@ public class NutritionistNote {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id", nullable = false)
+    @JsonIgnore
     private Child child;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nutritionist_id", nullable = false)
+    @JsonIgnore
     private User nutritionist;
 
     @Column(name = "note_type")

@@ -52,3 +52,12 @@ export function getRecommendationStats(childId) {
   })
 }
 
+// 生成 AI 推荐食谱
+export function generateAIRecommendations(childId, mealType = null) {
+  return request({
+    url: `/recipe-recommendations/child/${childId}/ai-recommend`,
+    method: 'post',
+    params: mealType ? { mealType } : {}
+  })
+}
+

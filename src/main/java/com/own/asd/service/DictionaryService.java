@@ -144,6 +144,14 @@ public class DictionaryService {
     }
 
     /**
+     * 获取所有启用的字典项
+     */
+    @Transactional(readOnly = true)
+    public List<Dictionary> getAllActiveDictionaries() {
+        return dictionaryRepository.findByIsActiveTrueOrderBySortOrderAsc();
+    }
+
+    /**
      * 检查字典代码是否唯一
      */
     @Transactional(readOnly = true)

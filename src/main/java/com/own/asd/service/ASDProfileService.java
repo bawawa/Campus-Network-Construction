@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +60,7 @@ public class ASDProfileService {
 
     public List<ASDProfile> getASDProfilesByChild(Long childId) {
         return childRepository.findById(childId)
-                .map(child -> List.copyOf(child.getAsdProfiles()))
+                .map(child -> new ArrayList<>(child.getAsdProfiles()))
                 .orElseThrow(() -> new RuntimeException("Child not found with id: " + childId));
     }
 

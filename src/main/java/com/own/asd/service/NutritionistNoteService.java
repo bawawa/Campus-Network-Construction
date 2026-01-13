@@ -3,8 +3,8 @@ package com.own.asd.service;
 import com.own.asd.model.nutrition.NutritionistNote;
 import com.own.asd.model.user.Child;
 import com.own.asd.model.user.User;
-import com.own.asd.repository.NutritionistNoteRepository;
 import com.own.asd.repository.ChildRepository;
+import com.own.asd.repository.NutritionistNoteRepository;
 import com.own.asd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -177,6 +177,37 @@ public class NutritionistNoteService {
     @Transactional(readOnly = true)
     public Optional<NutritionistNote> getNoteById(Long noteId) {
         return noteRepository.findById(noteId);
+    }
+
+    /**
+     * 获取营养师统计数据
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getNutritionistStats(Long nutritionistId) {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+
+        // 获取该营养师服务的所有儿童数量
+        List<Child> children = childRepository.findByParentId(nutritionistId);
+        stats.put("totalChildren", children.size());
+
+        // 统计该营养师创建的留言总数
+        List<NutritionistNote> allNotes = noteRepository.findByNutritionistIdOrderByCreatedAtDesc(nutritionistId);
+        stats.put("totalNotes", allNotes.size());
+
+        // 统计等待家长回复的留言数（有内容但家长未回复的）
+        long pendingResponses = allNotes.stream()
+            .filter(note -> note.getParentResponse() == null || note.getParentResponse().isEmpty())
+            .count();
+        stats.put("pendingResponses", pendingResponses);
+
+        // 统计最近7天内创建的留言数
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        long recentNotes = allNotes.stream()
+            .filter(note -> note.getCreatedAt().isAfter(sevenDaysAgo))
+            .count();
+        stats.put("recentNotes", recentNotes);
+
+        return stats;
     }
 }
 

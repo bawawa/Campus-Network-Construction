@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -28,5 +29,8 @@ public interface DietaryRecordRepository extends JpaRepository<DietaryRecord, Lo
 
     @Query("SELECT COUNT(DISTINCT dr.recordDate) FROM DietaryRecord dr WHERE dr.child.id = :childId AND dr.recordDate >= :startDate")
     Long countDistinctRecordDatesByChild(@Param("childId") Long childId, @Param("startDate") LocalDate startDate);
+
+    @Query("SELECT dr FROM DietaryRecord dr WHERE dr.child.id = :childId AND dr.recordDate >= :startDateTime AND dr.recordDate <= :endDateTime ORDER BY dr.recordDate ASC, dr.recordTime ASC")
+    List<DietaryRecord> findByChildIdAndRecordDateBetween(@Param("childId") Long childId, @Param("startDateTime") LocalDateTime startDateTime, @Param("endDateTime") LocalDateTime endDateTime);
 }
 

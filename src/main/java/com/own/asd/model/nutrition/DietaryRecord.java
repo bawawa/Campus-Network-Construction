@@ -1,13 +1,14 @@
 package com.own.asd.model.nutrition;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.own.asd.model.user.Child;
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class DietaryRecord {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id", nullable = false)
+    @JsonIgnore
     private Child child;
 
     @Column(name = "record_date", nullable = false)
@@ -40,6 +42,7 @@ public class DietaryRecord {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_item_id", nullable = false)
+    @JsonIgnore
     private FoodItem foodItem;
 
     @Column(name = "quantity", precision = 8, scale = 2)

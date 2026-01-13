@@ -2,6 +2,14 @@ import request from '@/utils/axios'
 
 // 用户相关API
 
+export function login(data) {
+  return request({
+    url: '/users/login',
+    method: 'post',
+    data
+  })
+}
+
 export function createUser(data) {
   return request({
     url: '/users',
@@ -43,6 +51,14 @@ export function getActiveUsers() {
   return request({
     url: '/users/active',
     method: 'get'
+  })
+}
+
+export function changePassword(id, data) {
+  return request({
+    url: `/users/${id}/change-password`,
+    method: 'post',
+    data
   })
 }
 

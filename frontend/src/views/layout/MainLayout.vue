@@ -20,7 +20,7 @@
             <span slot="title">仪表盘</span>
           </el-menu-item>
 
-          <el-submenu index="children">
+          <el-submenu index="children" v-if="userRole !== 'NUTRITIONIST'">
             <template slot="title">
               <i class="el-icon-s-custom"></i>
               <span>儿童管理</span>
@@ -46,6 +46,16 @@
             <i class="el-icon-user"></i>
             <span slot="title">营养师面板</span>
           </el-menu-item>
+
+          <el-submenu index="admin" v-if="userRole === 'ADMIN'">
+            <template slot="title">
+              <i class="el-icon-s-tools"></i>
+              <span>系统管理</span>
+            </template>
+            <el-menu-item index="/admin">管理面板</el-menu-item>
+            <el-menu-item index="/admin/users">用户管理</el-menu-item>
+            <el-menu-item index="/admin/roles">角色权限</el-menu-item>
+          </el-submenu>
         </el-menu>
       </el-aside>
 
@@ -61,7 +71,7 @@
             <el-dropdown trigger="click" @command="handleCommand">
               <span class="user-info">
                 <el-avatar size="small" icon="el-icon-user-solid"></el-avatar>
-                <span class="username">{{ userInfo?.name }}</span>
+                <span class="username">{{ userInfo && userInfo.name }}</span>
                 <i class="el-icon-arrow-down"></i>
               </span>
 
@@ -87,7 +97,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import {mapActions, mapGetters} from 'vuex'
 
 export default {
   name: 'MainLayout',

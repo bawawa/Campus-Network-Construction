@@ -155,8 +155,9 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import {mapGetters} from 'vuex'
 import moment from 'moment'
+import {getChildrenByParent} from '@/api/child'
 
 export default {
   name: 'ChildrenList',
@@ -180,38 +181,39 @@ export default {
     ...mapGetters('user', ['userId'])
   },
   created() {
+    console.log('=== ChildrenList created ===')
+    console.log('当前 userId:', this.userId)
     this.loadChildrenList()
   },
   methods: {
     async loadChildrenList() {
+      console.log('=== loadChildrenList 开始 ===')
+      console.log('userId:', this.userId)
+      console.log('localStorage userInfo:', localStorage.getItem('userInfo'))
+
+      if (!this.userId) {
+        console.warn('userId 为空，提示登录')
+        this.$message.warning('请先登录')
+        return
+      }
+
       this.loading = true
       try {
-        // 这里应该调用API获取儿童列表
-        // 暂时使用模拟数据
-        const mockData = [
-          {
-            id: 1,
-            name: '小明',
-            gender: 'MALE',
-            birthDate: '2018-05-15',
-            asdLevel: 'LEVEL_1',
-            dietaryRestrictions: ['乳糖不耐受', '麸质过敏'],
-            lastRecordDate: '2024-01-05'
-          },
-          {
-            id: 2,
-            name: '小红',
-            gender: 'FEMALE',
-            birthDate: '2019-03-20',
-            asdLevel: 'LEVEL_2',
-            dietaryRestrictions: ['坚果过敏'],
-            lastRecordDate: '2024-01-04'
-          }
-        ]
-
-        this.childrenList = mockData
-        this.pagination.total = mockData.length
+        const url = `/api/children/parent/${this.userId}`
+        console.log('请求 URL:', url)
+        const response = await getChildrenByParent(this.userId)
+        console.log('完整响应:', response)
+        console.log('Response 类型:', typeof response)
+        console.log('Response 是否为数组:', Array.isArray(response))
+        // axios拦截器已经返回了 response.data，所以 response 直接就是数据
+        const data = Array.isArray(response) ? response : (response.data || [])
+        console.log('解析后的数据:', data)
+        this.childrenList = data
+        this.pagination.total = data.length
+        console.log('childrenList 长度:', this.childrenList.length)
       } catch (error) {
+        console.error('获取儿童列表失败:', error)
+        console.error('错误详情:', error.response)
         this.$message.error('获取儿童列表失败')
       } finally {
         this.loading = false

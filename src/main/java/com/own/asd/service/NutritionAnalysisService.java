@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,20 +29,17 @@ public class NutritionAnalysisService {
      * 获取儿童的营养摄入分析
      */
     public Map<String, Object> analyzeNutritionIntake(Long childId, LocalDate startDate, LocalDate endDate) {
-        LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.MIN);
-        LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.MAX);
-
-        List<DietaryRecord> records = dietaryRecordRepository.findByChildIdAndRecordDateBetween(
-                childId, startDateTime, endDateTime);
+        List<DietaryRecord> records = dietaryRecordRepository.findByChildIdAndRecordDateBetweenOrderByRecordDateAscRecordTimeAsc(
+                childId, startDate, endDate);
 
         Map<String, Object> analysis = new HashMap<>();
 
         // 基础统计
         analysis.put("totalRecords", records.size());
-        analysis.put("analysisPeriod", Map.of(
-                "startDate", startDate,
-                "endDate", endDate
-        ));
+        Map<String, Object> period = new HashMap<>();
+        period.put("startDate", startDate);
+        period.put("endDate", endDate);
+        analysis.put("analysisPeriod", period);
 
         // 营养摄入统计
         Map<String, Double> nutritionSummary = calculateNutritionSummary(records);
@@ -91,17 +87,17 @@ public class NutritionAnalysisService {
         for (DietaryRecord record : records) {
             if (record.getFoodItem() != null) {
                 FoodItem food = record.getFoodItem();
-                double quantity = record.getQuantity() != null ? record.getQuantity() : 1.0;
+                double quantity = record.getQuantity() != null ? record.getQuantity().doubleValue() : 1.0;
 
-                totalCalories += (food.getCalories() != null ? food.getCalories() : 0) * quantity;
-                totalProtein += (food.getProtein() != null ? food.getProtein() : 0) * quantity;
-                totalCarbs += (food.getCarbohydrates() != null ? food.getCarbohydrates() : 0) * quantity;
-                totalFat += (food.getFat() != null ? food.getFat() : 0) * quantity;
-                totalFiber += (food.getFiber() != null ? food.getFiber() : 0) * quantity;
-                totalCalcium += (food.getCalcium() != null ? food.getCalcium() : 0) * quantity;
-                totalIron += (food.getIron() != null ? food.getIron() : 0) * quantity;
-                totalVitaminC += (food.getVitaminC() != null ? food.getVitaminC() : 0) * quantity;
-                totalVitaminD += (food.getVitaminD() != null ? food.getVitaminD() : 0) * quantity;
+                totalCalories += (food.getEnergyPer100g() != null ? food.getEnergyPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalProtein += (food.getProteinPer100g() != null ? food.getProteinPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalCarbs += (food.getCarbohydratePer100g() != null ? food.getCarbohydratePer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalFat += (food.getFatPer100g() != null ? food.getFatPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalFiber += (food.getFiberPer100g() != null ? food.getFiberPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalCalcium += (food.getCalciumPer100g() != null ? food.getCalciumPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalIron += (food.getIronPer100g() != null ? food.getIronPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalVitaminC += (food.getVitaminCPer100g() != null ? food.getVitaminCPer100g() : BigDecimal.ZERO).doubleValue() * quantity;
+                totalVitaminD += 0; // Vitamin D not available in current model
             }
         }
 
@@ -135,7 +131,7 @@ public class NutritionAnalysisService {
         // 按日期分组记录
         Map<LocalDate, List<DietaryRecord>> recordsByDate = records.stream()
                 .collect(Collectors.groupingBy(
-                        record -> record.getRecordDate().toLocalDate()
+                        record -> record.getRecordDate()
                 ));
 
         // 计算每日营养
@@ -162,7 +158,7 @@ public class NutritionAnalysisService {
     private Map<String, Object> analyzeMealDistribution(List<DietaryRecord> records) {
         Map<String, List<DietaryRecord>> meals = records.stream()
                 .collect(Collectors.groupingBy(
-                        record -> record.getMealType() != null ? record.getMealType() : "其他"
+                        record -> record.getMealType() != null ? record.getMealType().name() : "其他"
                 ));
 
         Map<String, Object> distribution = new HashMap<>();
@@ -177,9 +173,9 @@ public class NutritionAnalysisService {
 
             double totalCalories = 0;
             for (DietaryRecord record : mealRecords) {
-                if (record.getFoodItem() != null && record.getFoodItem().getCalories() != null) {
-                    double quantity = record.getQuantity() != null ? record.getQuantity() : 1.0;
-                    totalCalories += record.getFoodItem().getCalories() * quantity;
+                if (record.getFoodItem() != null && record.getFoodItem().getEnergyPer100g() != null) {
+                    double quantity = record.getQuantity() != null ? record.getQuantity().doubleValue() : 1.0;
+                    totalCalories += record.getFoodItem().getEnergyPer100g().doubleValue() * quantity;
                 }
             }
             mealCalories.put(mealType, round(totalCalories, 2));
@@ -201,7 +197,7 @@ public class NutritionAnalysisService {
         for (DietaryRecord record : records) {
             if (record.getFoodItem() != null) {
                 String category = record.getFoodItem().getCategory() != null ?
-                        record.getFoodItem().getCategory() : "其他";
+                        record.getFoodItem().getCategory().name() : "其他";
                 categories.computeIfAbsent(category, k -> new ArrayList<>()).add(record);
             }
         }
@@ -218,9 +214,9 @@ public class NutritionAnalysisService {
 
             double totalCalories = 0;
             for (DietaryRecord record : categoryRecords) {
-                if (record.getFoodItem() != null && record.getFoodItem().getCalories() != null) {
-                    double quantity = record.getQuantity() != null ? record.getQuantity() : 1.0;
-                    totalCalories += record.getFoodItem().getCalories() * quantity;
+                if (record.getFoodItem() != null && record.getFoodItem().getEnergyPer100g() != null) {
+                    double quantity = record.getQuantity() != null ? record.getQuantity().doubleValue() : 1.0;
+                    totalCalories += record.getFoodItem().getEnergyPer100g().doubleValue() * quantity;
                 }
             }
             categoryCalories.put(category, round(totalCalories, 2));
@@ -241,15 +237,50 @@ public class NutritionAnalysisService {
 
         // 推荐摄入量（以6-12岁儿童为基准，可根据年龄调整）
         Map<String, Map<String, Double>> recommendations = new HashMap<>();
-        recommendations.put("calories", Map.of("min", 1600.0, "max", 2200.0));
-        recommendations.put("protein", Map.of("min", 30.0, "max", 55.0));
-        recommendations.put("carbohydrates", Map.of("min", 225.0, "max", 325.0));
-        recommendations.put("fat", Map.of("min", 44.0, "max", 70.0));
-        recommendations.put("fiber", Map.of("min", 20.0, "max", 35.0));
-        recommendations.put("calcium", Map.of("min", 800.0, "max", 1300.0));
-        recommendations.put("iron", Map.of("min", 8.0, "max", 15.0));
-        recommendations.put("vitaminC", Map.of("min", 45.0, "max", 65.0));
-        recommendations.put("vitaminD", Map.of("min", 15.0, "max", 25.0));
+        Map<String, Double> caloriesRec = new HashMap<>();
+        caloriesRec.put("min", 1600.0);
+        caloriesRec.put("max", 2200.0);
+        recommendations.put("calories", caloriesRec);
+
+        Map<String, Double> proteinRec = new HashMap<>();
+        proteinRec.put("min", 30.0);
+        proteinRec.put("max", 55.0);
+        recommendations.put("protein", proteinRec);
+
+        Map<String, Double> carbsRec = new HashMap<>();
+        carbsRec.put("min", 225.0);
+        carbsRec.put("max", 325.0);
+        recommendations.put("carbohydrates", carbsRec);
+
+        Map<String, Double> fatRec = new HashMap<>();
+        fatRec.put("min", 44.0);
+        fatRec.put("max", 70.0);
+        recommendations.put("fat", fatRec);
+
+        Map<String, Double> fiberRec = new HashMap<>();
+        fiberRec.put("min", 20.0);
+        fiberRec.put("max", 35.0);
+        recommendations.put("fiber", fiberRec);
+
+        Map<String, Double> calciumRec = new HashMap<>();
+        calciumRec.put("min", 800.0);
+        calciumRec.put("max", 1300.0);
+        recommendations.put("calcium", calciumRec);
+
+        Map<String, Double> ironRec = new HashMap<>();
+        ironRec.put("min", 8.0);
+        ironRec.put("max", 15.0);
+        recommendations.put("iron", ironRec);
+
+        Map<String, Double> vitaminCRec = new HashMap<>();
+        vitaminCRec.put("min", 45.0);
+        vitaminCRec.put("max", 65.0);
+        recommendations.put("vitaminC", vitaminCRec);
+
+        Map<String, Double> vitaminDRec = new HashMap<>();
+        vitaminDRec.put("min", 15.0);
+        vitaminDRec.put("max", 25.0);
+        recommendations.put("vitaminD", vitaminDRec);
 
         Map<String, String> status = new HashMap<>();
         Map<String, Double> percentages = new HashMap<>();

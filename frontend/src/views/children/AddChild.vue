@@ -274,8 +274,9 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import moment from 'moment'
+import { createChild } from '@/api/child'
 
 export default {
   name: 'AddChild',
@@ -328,6 +329,7 @@ export default {
     ...mapGetters('user', ['userId'])
   },
   methods: {
+    ...mapActions('child', ['createChild']),
     nextStep() {
       if (this.currentStep === 0) {
         this.$refs.basicForm.validate((valid) => {
@@ -355,31 +357,23 @@ export default {
     async submitChildData() {
       this.loading = true
       try {
-        // 合并所有表单数据
+        // 合并所有表单数据，只发送后端支持的字段
         const childData = {
-          ...this.childForm,
-          parentId: this.userId,
-          asdProfile: {
-            ...this.asdForm,
-            diagnosisDate: this.asdForm.diagnosisDate ? moment(this.asdForm.diagnosisDate).format('YYYY-MM-DD') : null
-          },
-          dietaryRestrictions: [
-            ...this.dietaryForm.allergens,
-            ...this.dietaryForm.intolerances,
-            ...this.dietaryForm.preferences,
-            ...(this.dietaryForm.otherRestrictions ? [this.dietaryForm.otherRestrictions] : [])
-          ]
+          name: this.childForm.name,
+          gender: this.childForm.gender,
+          birthDate: this.childForm.birthDate ? moment(this.childForm.birthDate).format('YYYY-MM-DD') : null,
+          diagnosisInfo: this.asdForm.symptoms.join(', '),
+          allergyHistory: [...this.dietaryForm.allergens, ...this.dietaryForm.intolerances].join(', '),
+          preferredFoods: [...this.dietaryForm.preferences, ...(this.dietaryForm.otherRestrictions ? [this.dietaryForm.otherRestrictions] : [])].join(', ')
         }
 
-        // 这里应该调用API创建儿童档案
-        console.log('提交儿童数据:', childData)
-
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // 调用API创建儿童档案（后端会根据当前登录用户自动设置parent）
+        const response = await this.createChild(childData)
 
         this.currentStep = 3
         this.$message.success('儿童档案创建成功')
       } catch (error) {
+        console.error('创建儿童失败:', error)
         this.$message.error('创建失败，请重试')
       } finally {
         this.loading = false

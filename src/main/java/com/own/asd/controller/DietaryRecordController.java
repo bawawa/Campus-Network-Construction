@@ -1,14 +1,16 @@
 package com.own.asd.controller;
 
 import com.own.asd.model.nutrition.DietaryRecord;
+import com.own.asd.model.nutrition.DietaryRecordDTO;
 import com.own.asd.service.DietaryRecordService;
-import jakarta.validation.Valid;
+import com.own.asd.service.FoodNutritionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,11 +20,30 @@ import java.util.List;
 public class DietaryRecordController {
 
     private final DietaryRecordService dietaryRecordService;
+    private final FoodNutritionService foodNutritionService;
 
     @PostMapping
     public ResponseEntity<DietaryRecord> createDietaryRecord(
             @PathVariable Long childId,
-            @Valid @RequestBody DietaryRecord dietaryRecord) {
+            @Valid @RequestBody DietaryRecordDTO dto) {
+        // 从 DTO 创建 DietaryRecord 实体
+        DietaryRecord dietaryRecord = new DietaryRecord();
+        dietaryRecord.setMealType(dto.getMealType());
+        dietaryRecord.setQuantity(dto.getQuantity());
+        dietaryRecord.setUnit(dto.getUnit());
+        dietaryRecord.setRecordDate(dto.getRecordDate());
+        dietaryRecord.setRecordTime(dto.getRecordTime());
+        dietaryRecord.setCookingMethod(dto.getCookingMethod());
+        dietaryRecord.setEatingMood(dto.getEatingMood());
+        dietaryRecord.setBehaviorNotes(dto.getBehaviorNotes());
+        dietaryRecord.setNotes(dto.getNotes());
+
+        // 设置 FoodItem
+        if (dto.getFoodItemId() != null) {
+            foodNutritionService.getFoodNutritionDetails(dto.getFoodItemId())
+                .ifPresent(dietaryRecord::setFoodItem);
+        }
+
         DietaryRecord createdRecord = dietaryRecordService.createDietaryRecord(childId, dietaryRecord);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRecord);
     }
@@ -67,7 +88,25 @@ public class DietaryRecordController {
     public ResponseEntity<DietaryRecord> updateDietaryRecord(
             @PathVariable Long childId,
             @PathVariable Long recordId,
-            @Valid @RequestBody DietaryRecord recordDetails) {
+            @Valid @RequestBody DietaryRecordDTO dto) {
+        // 从 DTO 创建 DietaryRecord 实体
+        DietaryRecord recordDetails = new DietaryRecord();
+        recordDetails.setMealType(dto.getMealType());
+        recordDetails.setQuantity(dto.getQuantity());
+        recordDetails.setUnit(dto.getUnit());
+        recordDetails.setRecordDate(dto.getRecordDate());
+        recordDetails.setRecordTime(dto.getRecordTime());
+        recordDetails.setCookingMethod(dto.getCookingMethod());
+        recordDetails.setEatingMood(dto.getEatingMood());
+        recordDetails.setBehaviorNotes(dto.getBehaviorNotes());
+        recordDetails.setNotes(dto.getNotes());
+
+        // 设置 FoodItem
+        if (dto.getFoodItemId() != null) {
+            foodNutritionService.getFoodNutritionDetails(dto.getFoodItemId())
+                .ifPresent(recordDetails::setFoodItem);
+        }
+
         DietaryRecord updatedRecord = dietaryRecordService.updateDietaryRecord(childId, recordId, recordDetails);
         return ResponseEntity.ok(updatedRecord);
     }
