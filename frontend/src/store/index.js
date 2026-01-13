@@ -1,0 +1,17 @@
+import Vue from 'vue'
+import Vuex from 'vuex'
+import user from './modules/user'
+import child from './modules/child'
+import dietary from './modules/dietary'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  modules: {
+    user,
+    child,
+    dietary
+  },
+  strict: process.env.NODE_ENV !== 'production'
+})
+
